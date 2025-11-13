@@ -100,7 +100,7 @@ def predict_next_words(seed_text, n=None):
                     word = cand
                     break
 
-        print(f"[DEBUG] seed='{seed_text}' pred_index={pred_index} -> word='{word}' top={top_items}")
+        # print(f"[DEBUG] seed='{seed_text}' pred_index={pred_index} -> word='{word}' top={top_items}")
         if word:
             result.append(word)
             seed_text = seed_text + " " + word
@@ -143,9 +143,9 @@ async def disconnect(sid):
 @sio.event
 async def sentence_autocomplete(sid, data):
     text = data.get("text", "") if isinstance(data, dict) else ""
-    print(f"[EVENT] sentence_autocomplete from {sid}: '{text}'")
+    # print(f"[EVENT] sentence_autocomplete from {sid}: '{text}'")
     suggestions = predict_next_words(text)
-    print(f"[EVENT] suggestions -> {suggestions}")
+    # print(f"[EVENT] suggestions -> {suggestions}")
     await sio.emit("autocomplete_suggestions", {"suggestions": suggestions}, to=sid)
 
 if __name__ == "__main__":

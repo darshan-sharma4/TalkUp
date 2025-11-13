@@ -138,11 +138,11 @@ const MessageInput = () => {
       )}
 
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <div className="flex-1 flex gap-2 relative">
+        <div className="flex-1 flex gap-2 relative ">
           <input
             ref={inputRef}
             type="text"
-            className="w-full input input-bordered rounded-lg input-sm sm:input-md"
+            className="w-full input input-bordered rounded-lg input-sm sm:input-md p-2"
             placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -150,7 +150,7 @@ const MessageInput = () => {
             autoComplete="off"
           />
           {/* suggestions dropdown (overlay above input, does not push content) */}
-          {suggestions && suggestions.length > 0 && (
+          {suggestions && suggestions.length > 0 && text && (
             <div className="absolute left-0 right-0 bottom-full mb-2 z-50">
               <div className="bg-base-200 rounded-lg shadow-md divide-y border border-base-300 max-h-52 overflow-auto">
                 {suggestions.map((s, i) => (
