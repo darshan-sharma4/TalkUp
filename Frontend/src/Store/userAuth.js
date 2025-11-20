@@ -88,6 +88,8 @@ export const useAuthStore = create((set, get) => ({
         userId:authUser._id,
       },
       withCredentials: true,
+      autoConnect:false,
+      reconnection:true
     });
     socket.connect();
     set({socket:socket});
@@ -95,9 +97,10 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineUsers", (userIds)=>{
       set({onlineUsers:userIds})
     })
+    socket.emit("online",{receiverId:authUser._id})
 
   },
   disConnectSocket: () => {
-    if(get().socket?.connect) get().socket.disconnect();
+    if(get().socket?.connected) get().socket.disconnect();
   },
 }));

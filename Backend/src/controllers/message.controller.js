@@ -50,16 +50,24 @@ export const sendMessages = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      status:"sent",
     });
-    await newMessge.save();
+    const saved = await newMessge.save();
 
     // realtime functionality to dispaly messages..
     const recieverSocketId = getReceiverSocketId(receiverId);
     if(recieverSocketId) {
-      io.to(recieverSocketId).emit("newMessage",newMessge);
+      saved.status ="delivered";
+      await Message.findByIdAndUpdate(saved._id,{status:"delivered"});
+      io.to(recieverSocketId).emit("newMessage",saved);
+
+      const senderSocketId = getReceiverSocketId(senderId);
+      if(senderSocketId){
+        io.to(senderSocketId).emit("message_delivered",{messageId:saved._id})
+      }
     };
     
-    return res.status(201).json(newMessge);
+    return res.status(201).json(saved);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

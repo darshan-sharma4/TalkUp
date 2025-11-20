@@ -12,10 +12,10 @@ const MessageInput = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const { sendMessage, setTyping, } = useChatStore();
   const debounceRef = useRef(null);
   const SUGGEST_DEBOUNCE_MS = 120; // shorter debounce for snappier suggestions
-
+  const typingTimeout = useRef(null)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file.type.startsWith("image/")) {
@@ -66,7 +66,6 @@ const MessageInput = () => {
         setSuggestions(list);
         setActiveIndex(list && list.length > 0 ? 0 : null);
       } catch (err) {
-        // non-fatal; don't spam console
         console.debug("ml autocomplete error", err?.message || err);
         setSuggestions([]);
         setActiveIndex(null);
@@ -78,11 +77,11 @@ const MessageInput = () => {
     };
   }, [text]);
 
-  // No socket listener: using HTTP-only autocomplete for stability
-
   const applySuggestion = (sugg) => {
     // append suggestion to current text (ensure spacing)
-    setText((prev) => (prev && !prev.endsWith(" ") ? prev + " " + sugg : prev + sugg));
+    setText((prev) =>
+      prev && !prev.endsWith(" ") ? prev + " " + sugg : prev + sugg
+    );
     setSuggestions([]);
     setActiveIndex(null);
     // keep focus on input and move caret to end
@@ -105,7 +104,9 @@ const MessageInput = () => {
       setActiveIndex((prev) => (prev === null ? 0 : (prev + 1) % len));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActiveIndex((prev) => (prev === null ? len - 1 : (prev - 1 + len) % len));
+      setActiveIndex((prev) =>
+        prev === null ? len - 1 : (prev - 1 + len) % len
+      );
     } else if (e.key === "Tab") {
       // accept the active suggestion with Tab
       if (activeIndex !== null && suggestions[activeIndex]) {
@@ -113,6 +114,18 @@ const MessageInput = () => {
         applySuggestion(suggestions[activeIndex]);
       }
     }
+  };
+
+  const handleInputChange = (e) => {
+    setText(e.target.value);
+    setTyping(true);
+
+    if(typingTimeout.current) clearTimeout(typingTimeout.current)
+
+    typingTimeout.current = setTimeout(()=>{
+      setTyping(false);
+    },700);
+
   };
 
   return (
@@ -145,7 +158,7 @@ const MessageInput = () => {
             className="w-full input input-bordered rounded-lg input-sm sm:input-md p-2"
             placeholder="Type a message..."
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={onInputKeyDown}
             autoComplete="off"
           />
@@ -159,8 +172,12 @@ const MessageInput = () => {
                     type="button"
                     onClick={() => applySuggestion(s)}
                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                      i === activeIndex ? "bg-base-300 font-medium" : "hover:bg-base-300"
-                    } ${i === 0 ? "rounded-t-lg" : ""} ${i === suggestions.length - 1 ? "rounded-b-lg" : ""}`}
+                      i === activeIndex
+                        ? "bg-base-300 font-medium"
+                        : "hover:bg-base-300"
+                    } ${i === 0 ? "rounded-t-lg" : ""} ${
+                      i === suggestions.length - 1 ? "rounded-b-lg" : ""
+                    }`}
                   >
                     {s}
                   </button>

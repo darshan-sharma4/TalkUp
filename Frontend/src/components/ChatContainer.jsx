@@ -6,12 +6,19 @@ import MessagesSkeleton from "./skeletons/MessagesSkeleton";
 import { useAuthStore } from "../Store/userAuth";
 import { formatMessageTime } from "../lib/utils";
 import { useRef } from "react";
+import { Check, CheckCheck } from "lucide-react";
 
 const ChatContainer = () => {
-  const { messages, getMessages, isMessagesLoading, selectedUser,subscribeToMessages,unsubscribeToMessages } =
-    useChatStore();
+  const {
+    messages,
+    getMessages,
+    isMessagesLoading,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeToMessages,
+  } = useChatStore();
   const messageEndRef = useRef("");
-  const { authUser } = useAuthStore(); 
+  const { authUser } = useAuthStore();
 
   useEffect(() => {
     if (selectedUser?._id) {
@@ -20,14 +27,18 @@ const ChatContainer = () => {
     subscribeToMessages();
 
     return () => unsubscribeToMessages();
-  }, [selectedUser?._id,getMessages, subscribeToMessages, unsubscribeToMessages]);
-  
-useEffect(()=>{
-  if(messageEndRef.current && messages){
+  }, [
+    selectedUser?._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeToMessages,
+  ]);
 
-    messageEndRef.current.scrollIntoView({behavior:"smooth"});
-  }
-},[messages])
+  useEffect(() => {
+    if (messageEndRef.current && messages) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   if (isMessagesLoading) {
     return (
@@ -40,10 +51,10 @@ useEffect(()=>{
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
+    <div className="flex-1 flex flex-col overflow-auto ">
       <ChatHeader />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 }  bg-cover bg-center bg-no-repeat">
         {messages.map((message) => (
           <div
             key={message._id}
@@ -69,7 +80,7 @@ useEffect(()=>{
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
-            <div className="chat-bubble flex flex-col">
+            <div className="chat-bubble flex flex-col relative max-w-lg min-w-28">
               {message.image && (
                 <img
                   src={message.image}
@@ -77,12 +88,25 @@ useEffect(()=>{
                   className="sm:max-w-[200px] rounded-md mb-2"
                 />
               )}
-              {message.text && <p>{message.text}</p>}
+              <div className="flex gap-6  ">
+                {message.text && (
+                  <p className="w-auto text-wrap ">{message.text}</p>
+                )}
+
+                {message.senderId === authUser._id && (
+                  <span className="absolute bottom-0 right-1 text-xs font-thin opacity-70">
+                    {message.status === "sent" && <Check className="w-4" />}
+                    {message.status === "delivered" && <CheckCheck className="w-4" />}
+                    {message.status === "seen" && ( <CheckCheck className="w-4 text-blue-500" />
+                     
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
       </div>
-
       <MessageInput />
     </div>
   );
