@@ -94,7 +94,7 @@ const ChatContainer = () => {
                 )}
 
                 {message.senderId === authUser._id && (
-                  <span className="absolute bottom-0 right-1 text-xs font-thin opacity-70">
+                  <span className="absolute bottom-0 right-1 text-xs font-thin opacity-70 ">
                     {message.status === "sent" && <Check className="w-4" />}
                     {message.status === "delivered" && <CheckCheck className="w-4" />}
                     {message.status === "seen" && ( <CheckCheck className="w-4 text-blue-500" />

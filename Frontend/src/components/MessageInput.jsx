@@ -12,10 +12,27 @@ const MessageInput = () => {
   const [activeIndex, setActiveIndex] = useState(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
-  const { sendMessage, setTyping, } = useChatStore();
+  const { sendMessage, setTyping } = useChatStore();
   const debounceRef = useRef(null);
   const SUGGEST_DEBOUNCE_MS = 120; // shorter debounce for snappier suggestions
-  const typingTimeout = useRef(null)
+  const typingTimeout = useRef(null);
+  const documentInputRef = useRef(null);
+  const [documentPreview, setDocumentPreview] = useState(null);
+
+  const handleDocumentChange = (e) => {
+    const file = e.target.files[0];
+    if (!file.type.startsWith("pdf")) {
+      toast.err("please select a valid file type");
+      return;
+    }
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setDocumentPreview(reader.result);
+    };
+    reader.readAsText(file);
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file.type.startsWith("image/")) {
@@ -28,6 +45,7 @@ const MessageInput = () => {
     };
     reader.readAsDataURL(file);
   };
+
   const removeImage = (e) => {
     setimagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -120,12 +138,11 @@ const MessageInput = () => {
     setText(e.target.value);
     setTyping(true);
 
-    if(typingTimeout.current) clearTimeout(typingTimeout.current)
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
 
-    typingTimeout.current = setTimeout(()=>{
+    typingTimeout.current = setTimeout(() => {
       setTyping(false);
-    },700);
-
+    }, 700);
   };
 
   return (
@@ -150,18 +167,19 @@ const MessageInput = () => {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2  ">
         <div className="flex-1 flex gap-2 relative ">
           <input
             ref={inputRef}
             type="text"
-            className="w-full input input-bordered rounded-lg input-sm sm:input-md p-2"
+            className="w-full input input-bordered rounded-lg input-sm sm:input-md p-2 "
             placeholder="Type a message..."
             value={text}
             onChange={handleInputChange}
             onKeyDown={onInputKeyDown}
             autoComplete="off"
           />
+          
           {/* suggestions dropdown (overlay above input, does not push content) */}
           {suggestions && suggestions.length > 0 && text && (
             <div className="absolute left-0 right-0 bottom-full mb-2 z-50">
@@ -192,7 +210,6 @@ const MessageInput = () => {
             ref={fileInputRef}
             onChange={handleImageChange}
           />
-
           <button
             type="button"
             className={`hidden sm:flex btn btn-circle
